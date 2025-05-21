@@ -1,0 +1,1996 @@
+--------------Caesar cipher--------------
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+#define WIDTH 128
+#define HEIGHT 128
+
+// Get Caesar shift from key image (average pixel)
+int calculate_caesar_key(uint8_t *key_data, int size) {
+    // Example key from average pixel value
+    // long sum = 0;
+    // for (int i = 0; i < size; i++) {
+    //     sum += key_data[i];
+    // }
+    // return (sum / size) % 256;
+    return 3;
+}
+
+// Caesar encryption
+void encrypt_image(uint8_t *input, uint8_t *output, int size, int key) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] + key) % 256;
+    }
+}
+
+// Caesar decryption
+void decrypt_image(uint8_t *input, uint8_t *output, int size, int key) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] - key + 256) % 256;
+    }
+}
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int w1, h1, ch1;
+    int w2, h2, ch2;
+
+    // Load message image
+    uint8_t *msg_img = stbi_load("../images/input1.bmp", &w1, &h1, &ch1, 1); // grayscale
+    if (!msg_img) {
+        printf("Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    // Load key image
+    uint8_t *key_img = stbi_load("../images/input2.bmp", &w2, &h2, &ch2, 1); // grayscale
+    if (!key_img) {
+        printf("Failed to load input2.bmp\n");
+        stbi_image_free(msg_img);
+        return 1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        printf("Images must be the same size!\n");
+        stbi_image_free(msg_img);
+        stbi_image_free(key_img);
+        return 1;
+    }
+
+    int size = w1 * h1;
+
+    // Show input image matrix
+    print_matrix(msg_img, w1, h1, "Original Input Image Matrix");
+
+    int key = calculate_caesar_key(key_img, size);
+    printf("\nCaesar Key (derived from key image): %d\n", key);
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    encrypt_image(msg_img, encrypted, size, key);
+    stbi_write_bmp("../images/encrypted.bmp", w1, h1, 1, encrypted);
+    print_matrix(encrypted, w1, h1, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    decrypt_image(encrypted, decrypted, size, key);
+    stbi_write_bmp("../images/decrypted.bmp", w1, h1, 1, decrypted);
+    print_matrix(decrypted, w1, h1, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(msg_img);
+    stbi_image_free(key_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Encryption and decryption complete. Check the images and matrices.\n");
+    return 0;
+}
+
+
+--------------------modified Caesar cipher-----------------------
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Modified Caesar encryption
+void encrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] + key[i]) % 256;
+    }
+}
+
+// Modified Caesar decryption
+void decrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] - key[i] + 256) % 256;
+    }
+}
+
+int main() {
+    int w1, h1, ch1;
+    int w2, h2, ch2;
+
+    // Load message image
+    uint8_t *msg_img = stbi_load("../images/input1.bmp", &w1, &h1, &ch1, 1); // grayscale
+    if (!msg_img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    // Load key image
+    uint8_t *key_img = stbi_load("../images/input2.bmp", &w2, &h2, &ch2, 1); // grayscale
+    if (!key_img) {
+        printf(" Failed to load input2.bmp\n");
+        stbi_image_free(msg_img);
+        return 1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        printf(" Images must be the same size!\n");
+        stbi_image_free(msg_img);
+        stbi_image_free(key_img);
+        return 1;
+    }
+
+    int size = w1 * h1;
+
+    // Show key 
+    printf("\nKey Image Dimensions: %d x %d\n", w2, h2);
+    printf("Key Image Channel: %d\n", ch2);
+    printf("Key Image Size: %d bytes\n", size);
+    printf("Key Image Data (First 10x10 pixels):\n");
+    for (int i = 0; i < 10 && i < h2; i++) {
+        for (int j = 0; j < 10 && j < w2; j++) {
+            printf("%3d ", key_img[i * w2 + j]);
+        }
+        printf("\n");
+    }
+    
+    // Show input image matrix
+    print_matrix(msg_img, w1, h1, "Original Input Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    encrypt_image(msg_img, key_img, encrypted, size);
+    stbi_write_bmp("../images/encrypted_modified_caesar.bmp", w1, h1, 1, encrypted);
+    print_matrix(encrypted, w1, h1, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    decrypt_image(encrypted, key_img, decrypted, size);
+    stbi_write_bmp("../images/decrypted_modified_caesar.bmp", w1, h1, 1, decrypted);
+    print_matrix(decrypted, w1, h1, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(msg_img);
+    stbi_image_free(key_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Modified Caesar encryption and decryption complete.\n");
+    return 0;
+}
+
+
+-----------------------mono-alphabetic--------------------------
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Modified Caesar encryption
+void encrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] + key[i]) % 256;
+    }
+}
+
+// Modified Caesar decryption
+void decrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] - key[i] + 256) % 256;
+    }
+}
+
+int main() {
+    int w1, h1, ch1;
+    int w2, h2, ch2;
+
+    // Load message image
+    uint8_t *msg_img = stbi_load("../images/input1.bmp", &w1, &h1, &ch1, 1); // grayscale
+    if (!msg_img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    // Load key image
+    uint8_t *key_img = stbi_load("../images/input2.bmp", &w2, &h2, &ch2, 1); // grayscale
+    if (!key_img) {
+        printf(" Failed to load input2.bmp\n");
+        stbi_image_free(msg_img);
+        return 1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        printf(" Images must be the same size!\n");
+        stbi_image_free(msg_img);
+        stbi_image_free(key_img);
+        return 1;
+    }
+
+    int size = w1 * h1;
+
+    // Show key 
+    printf("\nKey Image Dimensions: %d x %d\n", w2, h2);
+    printf("Key Image Channel: %d\n", ch2);
+    printf("Key Image Size: %d bytes\n", size);
+    printf("Key Image Data (First 10x10 pixels):\n");
+    for (int i = 0; i < 10 && i < h2; i++) {
+        for (int j = 0; j < 10 && j < w2; j++) {
+            printf("%3d ", key_img[i * w2 + j]);
+        }
+        printf("\n");
+    }
+    
+    // Show input image matrix
+    print_matrix(msg_img, w1, h1, "Original Input Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    encrypt_image(msg_img, key_img, encrypted, size);
+    stbi_write_bmp("../images/encrypted_modified_caesar.bmp", w1, h1, 1, encrypted);
+    print_matrix(encrypted, w1, h1, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    decrypt_image(encrypted, key_img, decrypted, size);
+    stbi_write_bmp("../images/decrypted_modified_caesar.bmp", w1, h1, 1, decrypted);
+    print_matrix(decrypted, w1, h1, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(msg_img);
+    stbi_image_free(key_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Modified Caesar encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+------------------------------monoAlphabetic-------------------------------
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Create monoalphabetic key map from key image
+void generate_key_map(uint8_t *key_img, uint8_t *key_map, int size) {
+    int used[256] = {0};
+    int idx = 0;
+
+    for (int i = 0; i < size && idx < 256; i++) {
+        if (!used[key_img[i]]) {
+            key_map[idx++] = key_img[i];
+            used[key_img[i]] = 1;
+        }
+    }
+
+    for (int i = 0; i < 256; i++) {
+        if (!used[i]) {
+            key_map[idx++] = i;
+            used[i] = 1;
+        }
+    }
+}
+
+// Invert the key map
+void invert_key_map(uint8_t *key_map, uint8_t *inv_key_map) {
+    for (int i = 0; i < 256; i++) {
+        inv_key_map[key_map[i]] = i;
+    }
+}
+
+// Encrypt using monoalphabetic cipher
+void encrypt_image(uint8_t *input, uint8_t *output, uint8_t *key_map, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = key_map[input[i]];
+    }
+}
+
+// Decrypt using inverse key map
+void decrypt_image(uint8_t *input, uint8_t *output, uint8_t *inv_key_map, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = inv_key_map[input[i]];
+    }
+}
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int w1, h1, ch1, w2, h2, ch2;
+
+    uint8_t *msg_img = stbi_load("../images/input1.bmp", &w1, &h1, &ch1, 1);
+    if (!msg_img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    uint8_t *key_img = stbi_load("../images/input2.bmp", &w2, &h2, &ch2, 1);
+    if (!key_img) {
+        printf(" Failed to load input2.bmp\n");
+        stbi_image_free(msg_img);
+        return 1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        printf(" Images must be the same size!\n");
+        stbi_image_free(msg_img);
+        stbi_image_free(key_img);
+        return 1;
+    }
+
+    int size = w1 * h1;
+
+    // Generate key map
+    uint8_t key_map[256], inv_key_map[256];
+    generate_key_map(key_img, key_map, size);
+    invert_key_map(key_map, inv_key_map);
+
+    // Show matrices
+    printf("\nKey Image Data (First 10x10 pixels):\n");
+    for (int i = 0; i < 10 && i < h2; i++) {
+        for (int j = 0; j < 10 && j < w2; j++) {
+            printf("%3d ", key_img[i * w2 + j]);
+        }
+        printf("\n");
+    }
+
+    print_matrix(msg_img, w1, h1, "Original Input Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = malloc(size);
+    encrypt_image(msg_img, encrypted, key_map, size);
+    stbi_write_bmp("../images/encrypted_monoalphabetic.bmp", w1, h1, 1, encrypted);
+    print_matrix(encrypted, w1, h1, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = malloc(size);
+    decrypt_image(encrypted, decrypted, inv_key_map, size);
+    stbi_write_bmp("../images/decrypted_monoalphabetic.bmp", w1, h1, 1, decrypted);
+    print_matrix(decrypted, w1, h1, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(msg_img);
+    stbi_image_free(key_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Monoalphabetic encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+
+------------------------------homophonic------------------------------------
+
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Homophonic encryption (Modified Caesar using key image)
+void encrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] + key[i]) % 256;
+    }
+}
+
+// Homophonic decryption
+void decrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] - key[i] + 256) % 256;
+    }
+}
+
+int main() {
+    int w1, h1, ch1;
+    int w2, h2, ch2;
+
+    // Load message image (grayscale)
+    uint8_t *msg_img = stbi_load("../images/input1.bmp", &w1, &h1, &ch1, 1);
+    if (!msg_img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    // Load key image (force grayscale)
+    uint8_t *key_img = stbi_load("../images/input2.bmp", &w2, &h2, &ch2, 1);
+    if (!key_img) {
+        printf(" Failed to load input2.bmp\n");
+        stbi_image_free(msg_img);
+        return 1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        printf(" Images must be the same size!\n");
+        stbi_image_free(msg_img);
+        stbi_image_free(key_img);
+        return 1;
+    }
+
+    int size = w1 * h1;
+
+    // Show key image matrix
+    printf("\nKey Image Dimensions: %d x %d\n", w2, h2);
+    printf("Key Image Channel: 1 (grayscale)\n");
+    printf("Key Image Size: %d bytes\n", size);
+    print_matrix(key_img, w2, h2, "Key Image Matrix");
+
+    // Show input image matrix
+    print_matrix(msg_img, w1, h1, "Original Input Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    encrypt_image(msg_img, key_img, encrypted, size);
+    stbi_write_bmp("../images/encrypted_homophonic.bmp", w1, h1, 1, encrypted);
+    print_matrix(encrypted, w1, h1, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    decrypt_image(encrypted, key_img, decrypted, size);
+    stbi_write_bmp("../images/decrypted_homophonic.bmp", w1, h1, 1, decrypted);
+    print_matrix(decrypted, w1, h1, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(msg_img);
+    stbi_image_free(key_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Homophonic encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+
+
+-------------------------------5  vigenere--------------------------------
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Vigenère encryption
+void encrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] + key[i]) % 256;
+    }
+}
+
+// Vigenère decryption
+void decrypt_image(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = (input[i] - key[i] + 256) % 256;
+    }
+}
+
+int main() {
+    int w1, h1, ch1;
+    int w2, h2, ch2;
+
+    // Load message image
+    uint8_t *msg_img = stbi_load("../images/input1.bmp", &w1, &h1, &ch1, 1); // grayscale
+    if (!msg_img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    // Load key image
+    uint8_t *key_img = stbi_load("../images/input2.bmp", &w2, &h2, &ch2, 1); // grayscale
+    if (!key_img) {
+        printf(" Failed to load input2.bmp\n");
+        stbi_image_free(msg_img);
+        return 1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        printf(" Images must be the same size!\n");
+        stbi_image_free(msg_img);
+        stbi_image_free(key_img);
+        return 1;
+    }
+
+    int size = w1 * h1;
+
+    // Show key image info
+    printf("\nKey Image Dimensions: %d x %d\n", w2, h2);
+    printf("Key Image Channel: %d\n", ch2);
+    printf("Key Image Size: %d bytes\n", size);
+    printf("Key Image Data (First 10x10 pixels):\n");
+    for (int i = 0; i < 10 && i < h2; i++) {
+        for (int j = 0; j < 10 && j < w2; j++) {
+            printf("%3d ", key_img[i * w2 + j]);
+        }
+        printf("\n");
+    }
+
+    // Show input image matrix
+    print_matrix(msg_img, w1, h1, "Original Input Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    encrypt_image(msg_img, key_img, encrypted, size);
+    stbi_write_bmp("../images/encrypted_vigenere.bmp", w1, h1, 1, encrypted);
+    print_matrix(encrypted, w1, h1, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    decrypt_image(encrypted, key_img, decrypted, size);
+    stbi_write_bmp("../images/decrypted_vigenere.bmp", w1, h1, 1, decrypted);
+    print_matrix(decrypted, w1, h1, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(msg_img);
+    stbi_image_free(key_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Vigenère encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+---------------------------------6 playfair-----------------------------------
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+#define MATRIX_SIZE 16  // 16x16 = 256
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Build position table for 256 values in 16x16 matrix
+void build_playfair_matrix(int pos[256][2]) {
+    for (int i = 0; i < 256; i++) {
+        pos[i][0] = i / MATRIX_SIZE;  // row
+        pos[i][1] = i % MATRIX_SIZE;  // column
+    }
+}
+
+// Modified Playfair encryption
+void encrypt_image(uint8_t *input, uint8_t *output, int size, int pos[256][2]) {
+    for (int i = 0; i < size; i += 2) {
+        uint8_t a = input[i];
+        uint8_t b = (i + 1 < size) ? input[i + 1] : 0;
+
+        int row1 = pos[a][0], col1 = pos[a][1];
+        int row2 = pos[b][0], col2 = pos[b][1];
+
+        if (row1 == row2) {
+            output[i] = row1 * MATRIX_SIZE + ((col1 + 1) % MATRIX_SIZE);
+            output[i + 1] = row2 * MATRIX_SIZE + ((col2 + 1) % MATRIX_SIZE);
+        } else if (col1 == col2) {
+            output[i] = ((row1 + 1) % MATRIX_SIZE) * MATRIX_SIZE + col1;
+            output[i + 1] = ((row2 + 1) % MATRIX_SIZE) * MATRIX_SIZE + col2;
+        } else {
+            output[i] = row1 * MATRIX_SIZE + col2;
+            output[i + 1] = row2 * MATRIX_SIZE + col1;
+        }
+    }
+}
+
+// Modified Playfair decryption
+void decrypt_image(uint8_t *input, uint8_t *output, int size, int pos[256][2]) {
+    for (int i = 0; i < size; i += 2) {
+        uint8_t a = input[i];
+        uint8_t b = (i + 1 < size) ? input[i + 1] : 0;
+
+        int row1 = pos[a][0], col1 = pos[a][1];
+        int row2 = pos[b][0], col2 = pos[b][1];
+
+        if (row1 == row2) {
+            output[i] = row1 * MATRIX_SIZE + ((col1 - 1 + MATRIX_SIZE) % MATRIX_SIZE);
+            output[i + 1] = row2 * MATRIX_SIZE + ((col2 - 1 + MATRIX_SIZE) % MATRIX_SIZE);
+        } else if (col1 == col2) {
+            output[i] = ((row1 - 1 + MATRIX_SIZE) % MATRIX_SIZE) * MATRIX_SIZE + col1;
+            output[i + 1] = ((row2 - 1 + MATRIX_SIZE) % MATRIX_SIZE) * MATRIX_SIZE + col2;
+        } else {
+            output[i] = row1 * MATRIX_SIZE + col2;
+            output[i + 1] = row2 * MATRIX_SIZE + col1;
+        }
+    }
+}
+
+int main() {
+    int w, h, ch;
+
+    // Load image
+    uint8_t *img = stbi_load("../images/input1.bmp", &w, &h, &ch, 1); // grayscale
+    if (!img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    int size = w * h;
+
+    // Show input image matrix
+    print_matrix(img, w, h, "Original Input Image Matrix");
+
+    // Build Playfair matrix positions
+    int pos[256][2];
+    build_playfair_matrix(pos);
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    encrypt_image(img, encrypted, size, pos);
+    stbi_write_bmp("../images/encrypted_playfair.bmp", w, h, 1, encrypted);
+    print_matrix(encrypted, w, h, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    decrypt_image(encrypted, decrypted, size, pos);
+    stbi_write_bmp("../images/decrypted_playfair.bmp", w, h, 1, decrypted);
+    print_matrix(decrypted, w, h, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Playfair encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+
+
+
+
+------------------------------7 Hill cipher ----------------------------------
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Matrix size for Hill cipher
+#define MATRIX_SIZE 3
+
+// Compute determinant of 3x3 matrix modulo 256
+int mod256(int x) {
+    int r = x % 256;
+    return r < 0 ? r + 256 : r;
+}
+
+int determinant(int matrix[MATRIX_SIZE][MATRIX_SIZE]) {
+    int det = 0;
+    det += matrix[0][0] * (matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1]);
+    det -= matrix[0][1] * (matrix[1][0]*matrix[2][2] - matrix[1][2]*matrix[2][0]);
+    det += matrix[0][2] * (matrix[1][0]*matrix[2][1] - matrix[1][1]*matrix[2][0]);
+    return mod256(det);
+}
+
+// Extended Euclidean Algorithm for modular inverse of determinant mod 256
+int modInverse(int a, int m) {
+    a = a % m;
+    for (int x = 1; x < m; x++) {
+        if ((a * x) % m == 1)
+            return x;
+    }
+    return -1; // No modular inverse if -1
+}
+
+// Calculate adjugate matrix of 3x3 matrix mod 256
+void adjugate(int matrix[MATRIX_SIZE][MATRIX_SIZE], int adj[MATRIX_SIZE][MATRIX_SIZE]) {
+    adj[0][0] = mod256(matrix[1][1]*matrix[2][2] - matrix[1][2]*matrix[2][1]);
+    adj[0][1] = mod256(-(matrix[0][1]*matrix[2][2] - matrix[0][2]*matrix[2][1]));
+    adj[0][2] = mod256(matrix[0][1]*matrix[1][2] - matrix[0][2]*matrix[1][1]);
+
+    adj[1][0] = mod256(-(matrix[1][0]*matrix[2][2] - matrix[1][2]*matrix[2][0]));
+    adj[1][1] = mod256(matrix[0][0]*matrix[2][2] - matrix[0][2]*matrix[2][0]);
+    adj[1][2] = mod256(-(matrix[0][0]*matrix[1][2] - matrix[0][2]*matrix[1][0]));
+
+    adj[2][0] = mod256(matrix[1][0]*matrix[2][1] - matrix[1][1]*matrix[2][0]);
+    adj[2][1] = mod256(-(matrix[0][0]*matrix[2][1] - matrix[0][1]*matrix[2][0]));
+    adj[2][2] = mod256(matrix[0][0]*matrix[1][1] - matrix[0][1]*matrix[1][0]);
+}
+
+// Multiply 3x3 matrix with 3x1 vector modulo 256
+void matrix_multiply(int matrix[MATRIX_SIZE][MATRIX_SIZE], uint8_t *vec, uint8_t *result) {
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        int val = 0;
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            val += matrix[i][j] * vec[j];
+        }
+        result[i] = mod256(val);
+    }
+}
+
+// Print matrix for debugging
+void print_matrix(int matrix[MATRIX_SIZE][MATRIX_SIZE], const char* name) {
+    printf("\n%s:\n", name);
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            printf("%4d ", matrix[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int w, h, ch;
+
+    // Load grayscale image (1 channel)
+    uint8_t *img = stbi_load("../images/input1.bmp", &w, &h, &ch, 1);
+    if (!img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+    int size = w * h;
+
+    printf("Image loaded: %d x %d, channels: %d\n", w, h, 1);
+
+    // Hill cipher key matrix (must be invertible mod 256)
+    int key[MATRIX_SIZE][MATRIX_SIZE] = {
+        {6, 24, 1},
+        {13, 16, 10},
+        {20, 17, 15}
+    };
+
+    print_matrix(key, "Key Matrix");
+
+    // Calculate determinant and its modular inverse
+    int det = determinant(key);
+    int det_inv = modInverse(det, 256);
+    if (det_inv == -1) {
+        printf(" Key matrix is not invertible mod 256. Choose another key.\n");
+        stbi_image_free(img);
+        return 1;
+    }
+    printf("Determinant mod 256: %d\n", det);
+    printf("Modular inverse of determinant: %d\n", det_inv);
+
+    // Calculate adjugate matrix
+    int adj[MATRIX_SIZE][MATRIX_SIZE];
+    adjugate(key, adj);
+
+    print_matrix(adj, "Adjugate Matrix");
+
+    // Calculate inverse key matrix = det_inv * adj mod 256
+    int inv_key[MATRIX_SIZE][MATRIX_SIZE];
+    for (int i = 0; i < MATRIX_SIZE; i++) {
+        for (int j = 0; j < MATRIX_SIZE; j++) {
+            inv_key[i][j] = mod256(adj[i][j] * det_inv);
+        }
+    }
+    print_matrix(inv_key, "Inverse Key Matrix");
+
+    // Padding image size to multiple of 3
+    int padded_size = size;
+    if (padded_size % MATRIX_SIZE != 0) {
+        padded_size += MATRIX_SIZE - (padded_size % MATRIX_SIZE);
+    }
+
+    uint8_t *padded_img = (uint8_t *)calloc(padded_size, sizeof(uint8_t));
+    memcpy(padded_img, img, size);
+
+    // Encrypt image
+    uint8_t *encrypted = (uint8_t *)malloc(padded_size);
+    for (int i = 0; i < padded_size; i += MATRIX_SIZE) {
+        matrix_multiply(key, &padded_img[i], &encrypted[i]);
+    }
+
+    stbi_write_bmp("../images/encrypted_hill.bmp", w, h, 1, encrypted);
+    printf("\nEncrypted image saved as encrypted_hill.bmp\n");
+
+    // Decrypt image
+    uint8_t *decrypted = (uint8_t *)malloc(padded_size);
+    for (int i = 0; i < padded_size; i += MATRIX_SIZE) {
+        matrix_multiply(inv_key, &encrypted[i], &decrypted[i]);
+    }
+
+    // Copy decrypted pixels back to original image size (ignore padding)
+    stbi_write_bmp("../images/decrypted_hill.bmp", w, h, 1, decrypted);
+    printf("Decrypted image saved as decrypted_hill.bmp\n");
+
+    // Show first 10x10 pixels of original, encrypted, decrypted for verification
+    printf("\nOriginal Image Matrix (First 10x10 pixels):\n");
+    for (int i = 0; i < 10 && i < h; i++) {
+        for (int j = 0; j < 10 && j < w; j++) {
+            printf("%4d ", img[i * w + j]);
+        }
+        printf("\n");
+    }
+
+    printf("\nEncrypted Image Matrix (First 10x10 pixels):\n");
+    for (int i = 0; i < 10 && i < h; i++) {
+        for (int j = 0; j < 10 && j < w; j++) {
+            printf("%4d ", encrypted[i * w + j]);
+        }
+        printf("\n");
+    }
+
+    printf("\nDecrypted Image Matrix (First 10x10 pixels):\n");
+    for (int i = 0; i < 10 && i < h; i++) {
+        for (int j = 0; j < 10 && j < w; j++) {
+            printf("%4d ", decrypted[i * w + j]);
+        }
+        printf("\n");
+    }
+
+    // Cleanup
+    stbi_image_free(img);
+    free(padded_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Hill cipher encryption and decryption completed successfully.\n");
+    return 0;
+}
+
+
+
+
+
+
+
+--------------------------------8 vernem ---------------------------------
+
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Utility to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Vernam encryption/decryption using XOR
+void vernam_cipher(uint8_t *input, uint8_t *key, uint8_t *output, int size) {
+    for (int i = 0; i < size; i++) {
+        output[i] = input[i] ^ key[i];
+    }
+}
+
+int main() {
+    int w1, h1, ch1;
+    int w2, h2, ch2;
+
+    // Load message image
+    uint8_t *msg_img = stbi_load("../images/input1.bmp", &w1, &h1, &ch1, 1);
+    if (!msg_img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    // Load key image (same size as message)
+    uint8_t *key_img = stbi_load("../images/input2.bmp", &w2, &h2, &ch2, 1);
+    if (!key_img) {
+        printf(" Failed to load input2.bmp\n");
+        stbi_image_free(msg_img);
+        return 1;
+    }
+
+    if (w1 != w2 || h1 != h2) {
+        printf(" Images must be the same size!\n");
+        stbi_image_free(msg_img);
+        stbi_image_free(key_img);
+        return 1;
+    }
+
+    int size = w1 * h1;
+
+    // Show key image matrix
+    printf("\nKey Image Dimensions: %d x %d\n", w2, h2);
+    printf("Key Image Channel: %d\n", ch2);
+    printf("Key Image Size: %d bytes\n", size);
+    print_matrix(key_img, w2, h2, "Key Image Matrix");
+
+    // Show input image matrix
+    print_matrix(msg_img, w1, h1, "Original Input Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    vernam_cipher(msg_img, key_img, encrypted, size);
+    stbi_write_bmp("../images/encrypted_vernam.bmp", w1, h1, 1, encrypted);
+    print_matrix(encrypted, w1, h1, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    vernam_cipher(encrypted, key_img, decrypted, size); // Same operation
+    stbi_write_bmp("../images/decrypted_vernam.bmp", w1, h1, 1, decrypted);
+    print_matrix(decrypted, w1, h1, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(msg_img);
+    stbi_image_free(key_img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Vernam cipher encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+
+
+
+----------------------------------9 Rail -------------------------------
+
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+#define NUM_RAILS 3  // Number of rails for the cipher
+
+// Utility to print a 10×10 region of a grayscale image
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10×10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Rail-Fence encryption: builds a zigzag index order
+void rail_fence_encrypt(uint8_t *in, uint8_t *out, int size) {
+    int rail = 0, dir = 1;
+    int *counts   = calloc(NUM_RAILS, sizeof(int));
+    int **rails   = malloc(NUM_RAILS * sizeof(int*));
+    for (int r = 0; r < NUM_RAILS; r++)
+        rails[r] = malloc(size * sizeof(int));
+
+    // assign each position to a rail
+    for (int i = 0; i < size; i++) {
+        rails[rail][counts[rail]++] = i;
+        if (rail == 0)       dir =  1;
+        else if (rail == NUM_RAILS-1) dir = -1;
+        rail += dir;
+    }
+
+    // write out in rail order
+    int idx = 0;
+    for (int r = 0; r < NUM_RAILS; r++)
+        for (int k = 0; k < counts[r]; k++)
+            out[idx++] = in[ rails[r][k] ];
+
+    for (int r = 0; r < NUM_RAILS; r++) free(rails[r]);
+    free(rails);
+    free(counts);
+}
+
+// Rail-Fence decryption: reverse the zigzag index mapping
+void rail_fence_decrypt(uint8_t *in, uint8_t *out, int size) {
+    int rail = 0, dir = 1;
+    int *counts   = calloc(NUM_RAILS, sizeof(int));
+    int **rails   = malloc(NUM_RAILS * sizeof(int*));
+    for (int r = 0; r < NUM_RAILS; r++)
+        rails[r] = malloc(size * sizeof(int));
+
+    // rebuild the same rail pattern
+    for (int i = 0; i < size; i++) {
+        rails[rail][counts[rail]++] = i;
+        if (rail == 0)       dir =  1;
+        else if (rail == NUM_RAILS-1) dir = -1;
+        rail += dir;
+    }
+
+    // read ciphertext back into original positions
+    int idx = 0;
+    for (int r = 0; r < NUM_RAILS; r++)
+        for (int k = 0; k < counts[r]; k++)
+            out[ rails[r][k] ] = in[idx++];
+
+    for (int r = 0; r < NUM_RAILS; r++) free(rails[r]);
+    free(rails);
+    free(counts);
+}
+
+int main() {
+    int w, h, ch;
+
+    // Load as grayscale
+    uint8_t *input = stbi_load("../images/input1.bmp", &w, &h, &ch, 1);
+    if (!input) {
+        fprintf(stderr, " Failed to load input1.bmp\n");
+        return 1;
+    }
+    int size = w * h;
+
+    // Buffers
+    uint8_t *encrypted = malloc(size);
+    uint8_t *decrypted = malloc(size);
+
+    // Encrypt then immediately decrypt
+    rail_fence_encrypt(input, encrypted, size);
+    rail_fence_decrypt(encrypted, decrypted, size);
+
+    // Write only the decrypted (recovered) image
+    stbi_write_bmp("../images/decrypted_rail_fence.bmp", w, h, 1, decrypted);
+
+    // Print the recovered 10×10 pixel block
+    print_matrix(decrypted, w, h, "Decrypted (Original) Image Matrix");
+
+    // Cleanup
+    stbi_image_free(input);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Rail Fence decrypt-only mode complete. See decrypted_rail_fence.bmp\n");
+    return 0;
+}
+
+
+
+
+
+
+-------------------------------------10 columnar -------------------------------
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+#define COL_KEY_LEN 4
+int key[COL_KEY_LEN] = {3, 1, 4, 2}; // Order in which to read columns
+
+// Utility function to print matrix
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+void columnar_encrypt(uint8_t *input, uint8_t *output, int total_pixels) {
+    int rows = (total_pixels + COL_KEY_LEN - 1) / COL_KEY_LEN;
+    uint8_t **matrix = malloc(rows * sizeof(uint8_t *));
+    for (int i = 0; i < rows; i++) {
+        matrix[i] = calloc(COL_KEY_LEN, sizeof(uint8_t));
+    }
+
+    // Fill the matrix row-wise
+    for (int i = 0; i < total_pixels; i++) {
+        matrix[i / COL_KEY_LEN][i % COL_KEY_LEN] = input[i];
+    }
+
+    // Rearrange based on key
+    int index = 0;
+    for (int k = 1; k <= COL_KEY_LEN; k++) {
+        for (int j = 0; j < COL_KEY_LEN; j++) {
+            if (key[j] == k) {
+                for (int i = 0; i < rows; i++) {
+                    output[index++] = matrix[i][j];
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < rows; i++) free(matrix[i]);
+    free(matrix);
+}
+
+void columnar_decrypt(uint8_t *input, uint8_t *output, int total_pixels) {
+    int rows = (total_pixels + COL_KEY_LEN - 1) / COL_KEY_LEN;
+    uint8_t **matrix = malloc(rows * sizeof(uint8_t *));
+    for (int i = 0; i < rows; i++) {
+        matrix[i] = calloc(COL_KEY_LEN, sizeof(uint8_t));
+    }
+
+    // Fill columns based on key
+    int index = 0;
+    for (int k = 1; k <= COL_KEY_LEN; k++) {
+        for (int j = 0; j < COL_KEY_LEN; j++) {
+            if (key[j] == k) {
+                for (int i = 0; i < rows; i++) {
+                    matrix[i][j] = input[index++];
+                }
+            }
+        }
+    }
+
+    // Read row-wise
+    index = 0;
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < COL_KEY_LEN; j++) {
+            if (index < total_pixels) {
+                output[index++] = matrix[i][j];
+            }
+        }
+    }
+
+    for (int i = 0; i < rows; i++) free(matrix[i]);
+    free(matrix);
+}
+
+int main() {
+    int width, height, channels;
+
+    // Load grayscale image
+    uint8_t *input = stbi_load("../images/input1.bmp", &width, &height, &channels, 1);
+    if (!input) {
+        printf(" Failed to load input image.\n");
+        return 1;
+    }
+
+    int total_pixels = width * height;
+    printf("\nImage Dimensions: %d x %d\n", width, height);
+    printf("Total Pixels: %d\n", total_pixels);
+
+    print_matrix(input, width, height, "Original Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(total_pixels);
+    columnar_encrypt(input, encrypted, total_pixels);
+    stbi_write_bmp("../images/encrypted_columnar.bmp", width, height, 1, encrypted);
+    print_matrix(encrypted, width, height, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(total_pixels);
+    columnar_decrypt(encrypted, decrypted, total_pixels);
+    stbi_write_bmp("../images/decrypted_columnar.bmp", width, height, 1, decrypted);
+    print_matrix(decrypted, width, height, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(input);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n Columnar Transposition encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+
+
+----------------------------------- 11 DIFFIE HELLMEN --------------------------
+
+
+
+
+
+
+
+#include <stdio.h>
+#include <stdint.h>
+#include <math.h>
+
+// Function to compute (base^exp) % mod
+uint64_t power_mod(uint64_t base, uint64_t exp, uint64_t mod) {
+    uint64_t result = 1;
+    base = base % mod;
+    while (exp > 0) {
+        if (exp % 2 == 1) {
+            result = (result * base) % mod;
+        }
+        exp = exp >> 1;
+        base = (base * base) % mod;
+    }
+    return result;
+}
+
+int main() {
+    // Public parameters (small for demo; use 2048-bit in practice)
+    uint64_t p = 23;  // prime number
+    uint64_t g = 5;   // primitive root modulo p
+
+    printf("Public Parameters:\n");
+    printf("Prime p = %llu\n", p);
+    printf("Generator g = %llu\n", g);
+
+    // Alice's private key
+    uint64_t a_private = 6;
+    // Bob's private key
+    uint64_t b_private = 15;
+
+    // Compute public keys
+    uint64_t A = power_mod(g, a_private, p); // Alice's public key
+    uint64_t B = power_mod(g, b_private, p); // Bob's public key
+
+    printf("\nAlice Private Key: %llu\n", a_private);
+    printf("Bob Private Key: %llu\n", b_private);
+
+    printf("\nAlice Public Key (A): %llu\n", A);
+    printf("Bob Public Key (B): %llu\n", B);
+
+    // Compute shared secret
+    uint64_t shared_A = power_mod(B, a_private, p); // Alice computes
+    uint64_t shared_B = power_mod(A, b_private, p); // Bob computes
+
+    printf("\nShared Secret Computed by Alice: %llu\n", shared_A);
+    printf("Shared Secret Computed by Bob:   %llu\n", shared_B);
+
+    if (shared_A == shared_B) {
+        printf("\n Key exchange successful. Shared key established securely.\n");
+    } else {
+        printf("\n Key exchange failed. Shared keys do not match.\n");
+    }
+
+    return 0;
+}
+
+
+
+
+
+-----------------------------------12 ECB with RC4 -------------------------------
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// RC4 state
+typedef struct {
+    uint8_t S[256];
+    int i, j;
+} RC4State;
+
+// Initialize RC4 key scheduling algorithm
+void rc4_init(RC4State *state, const uint8_t *key, int keylen) {
+    for (int i = 0; i < 256; i++) {
+        state->S[i] = i;
+    }
+    int j = 0;
+    for (int i = 0; i < 256; i++) {
+        j = (j + state->S[i] + key[i % keylen]) & 0xFF;
+        uint8_t tmp = state->S[i];
+        state->S[i] = state->S[j];
+        state->S[j] = tmp;
+    }
+    state->i = 0;
+    state->j = 0;
+}
+
+// Generate next byte of RC4 keystream
+uint8_t rc4_get_byte(RC4State *state) {
+    state->i = (state->i + 1) & 0xFF;
+    state->j = (state->j + state->S[state->i]) & 0xFF;
+    uint8_t tmp = state->S[state->i];
+    state->S[state->i] = state->S[state->j];
+    state->S[state->j] = tmp;
+    uint8_t K = state->S[(state->S[state->i] + state->S[state->j]) & 0xFF];
+    return K;
+}
+
+// Encrypt/Decrypt (same operation in RC4)
+void rc4_crypt(uint8_t *input, uint8_t *output, int size, const uint8_t *key, int keylen) {
+    RC4State state;
+    rc4_init(&state, key, keylen);
+    for (int i = 0; i < size; i++) {
+        uint8_t keystream_byte = rc4_get_byte(&state);
+        output[i] = input[i] ^ keystream_byte;
+    }
+}
+
+// Utility to print matrix (first 10x10 pixels)
+void print_matrix(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%3d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+int main() {
+    int w, h, ch;
+
+    // Load grayscale image
+    uint8_t *img = stbi_load("../images/input1.bmp", &w, &h, &ch, 1);
+    if (!img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+
+    int size = w * h;
+
+    // Key for RC4
+    const char *key_str = "networksecuritylab";
+    int keylen = strlen(key_str);
+    const uint8_t *key = (const uint8_t *)key_str;
+
+    // Show input matrix
+    print_matrix(img, w, h, "Original Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    rc4_crypt(img, encrypted, size, key, keylen);
+    stbi_write_bmp("../images/encrypted_ecb_rc4.bmp", w, h, 1, encrypted);
+    print_matrix(encrypted, w, h, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    rc4_crypt(encrypted, decrypted, size, key, keylen); // same function
+    stbi_write_bmp("../images/decrypted_ecb_rc4.bmp", w, h, 1, decrypted);
+    print_matrix(decrypted, w, h, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n ECB Mode RC4 encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+
+
+
+-----------------------------------13 CBC with RSA -------------------------------
+
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// RSA parameters (small primes for demo)
+const uint32_t RSA_N = 3233;    // modulus n = p*q (61*53)
+const uint32_t RSA_E = 17;      // public exponent
+const uint32_t RSA_D = 2753;    // private exponent
+
+// Modular exponentiation
+uint32_t mod_exp(uint32_t base, uint32_t exp, uint32_t mod) {
+    uint64_t result = 1;
+    uint64_t base_mod = base % mod;
+    while (exp > 0) {
+        if (exp & 1) {
+            result = (result * base_mod) % mod;
+        }
+        base_mod = (base_mod * base_mod) % mod;
+        exp >>= 1;
+    }
+    return (uint32_t)result;
+}
+
+// Print matrix (first 10x10 pixels)
+void print_matrix_uint8(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%4d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Print matrix (first 10x10 pixels) of uint32_t, showing only lower 8 bits (for visualization)
+void print_matrix_uint32(uint32_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels - lower 8 bits):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%4d ", data[i * width + j] & 0xFF);
+        }
+        printf("\n");
+    }
+}
+
+// RSA encrypt a byte (plaintext < RSA_N)
+uint32_t rsa_encrypt_byte(uint8_t plaintext) {
+    return mod_exp(plaintext, RSA_E, RSA_N);
+}
+
+// RSA decrypt a ciphertext block
+uint8_t rsa_decrypt_uint32(uint32_t ciphertext) {
+    return (uint8_t)mod_exp(ciphertext, RSA_D, RSA_N);
+}
+
+// CBC encryption with RSA per pixel
+void encrypt_cbc_rsa(uint8_t *plaintext, uint32_t *ciphertext, int size) {
+    uint32_t prev_cipher = 0; // IV
+
+    for (int i = 0; i < size; i++) {
+        uint32_t block = (uint32_t)(plaintext[i] ^ (prev_cipher & 0xFF)); // XOR with lowest byte of prev_cipher
+        uint32_t encrypted = rsa_encrypt_byte((uint8_t)block);
+        ciphertext[i] = encrypted;
+        prev_cipher = encrypted;
+    }
+}
+
+// CBC decryption with RSA per pixel
+void decrypt_cbc_rsa(uint32_t *ciphertext, uint8_t *plaintext, int size) {
+    uint32_t prev_cipher = 0; // IV
+
+    for (int i = 0; i < size; i++) {
+        uint8_t decrypted = rsa_decrypt_uint32(ciphertext[i]);
+        plaintext[i] = decrypted ^ (prev_cipher & 0xFF);
+        prev_cipher = ciphertext[i];
+    }
+}
+
+int main() {
+    int w, h, ch;
+
+    // Load grayscale image
+    uint8_t *img = stbi_load("../images/input1.bmp", &w, &h, &ch, 1);
+    if (!img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+    int size = w * h;
+
+    print_matrix_uint8(img, w, h, "Original Image Matrix");
+
+    // Allocate ciphertext array (uint32_t)
+    uint32_t *encrypted = (uint32_t *)malloc(sizeof(uint32_t) * size);
+    if (!encrypted) {
+        printf(" Memory allocation failed\n");
+        stbi_image_free(img);
+        return 1;
+    }
+
+    // Encrypt
+    encrypt_cbc_rsa(img, encrypted, size);
+
+    // For visualization, save encrypted image (only lower 8 bits)
+    uint8_t *enc_vis = (uint8_t *)malloc(size);
+    for (int i = 0; i < size; i++) {
+        enc_vis[i] = (uint8_t)(encrypted[i] & 0xFF);
+    }
+    stbi_write_bmp("../images/encrypted_cbc_rsa.bmp", w, h, 1, enc_vis);
+    print_matrix_uint32(encrypted, w, h, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    decrypt_cbc_rsa(encrypted, decrypted, size);
+
+    stbi_write_bmp("../images/decrypted_cbc_rsa.bmp", w, h, 1, decrypted);
+    print_matrix_uint8(decrypted, w, h, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(img);
+    free(encrypted);
+    free(enc_vis);
+    free(decrypted);
+
+    printf("\n CBC RSA encryption and decryption complete.\n");
+    return 0;
+}
+
+
+---------------------------------14 CFB with ELGAMAL -------------------------------
+
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <time.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Modular exponentiation
+uint32_t mod_exp(uint32_t base, uint32_t exp, uint32_t mod) {
+    uint64_t result = 1;
+    uint64_t base_mod = base % mod;
+    while (exp > 0) {
+        if (exp & 1) {
+            result = (result * base_mod) % mod;
+        }
+        base_mod = (base_mod * base_mod) % mod;
+        exp >>= 1;
+    }
+    return (uint32_t)result;
+}
+
+// ElGamal parameters (small prime for demo)
+const uint32_t P = 30803;      // A prime number > 255 (choose suitable prime)
+const uint32_t G = 2;          // Generator
+const uint32_t X = 7897;       // Private key (randomly chosen < P)
+uint32_t Y;                    // Public key Y = G^X mod P
+
+// Compute public key Y
+void elgamal_init() {
+    Y = mod_exp(G, X, P);
+}
+
+// Print matrix uint8_t
+void print_matrix_uint8(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%4d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// Encrypt one byte with ElGamal CFB mode
+// input: plaintext byte M, previous ciphertext C_prev
+// output: ciphertext byte C_out, next feedback vector
+uint8_t elgamal_encrypt_byte(uint8_t M, uint32_t *feedback) {
+    // For demo, fixed ephemeral key k = 12345 (should be random per block in real)
+    uint32_t k = 12345;
+
+    // Calculate S = g^k mod p
+    uint32_t S = mod_exp(G, k, P);
+
+    // Calculate shared secret = Y^k mod p
+    uint32_t shared_secret = mod_exp(Y, k, P);
+
+    // XOR plaintext with low 8 bits of (shared_secret XOR feedback low 8 bits)
+    uint8_t C = M ^ ((shared_secret & 0xFF) ^ (*feedback & 0xFF));
+
+    // Update feedback with S (low 8 bits)
+    *feedback = S;
+
+    return C;
+}
+
+// Decrypt one byte with ElGamal CFB mode
+// input: ciphertext byte C, previous ciphertext feedback
+// output: plaintext byte M, next feedback vector
+uint8_t elgamal_decrypt_byte(uint8_t C, uint32_t *feedback) {
+    // Fixed ephemeral key k = 12345 (same as encryption)
+    uint32_t k = 12345;
+
+    // Calculate S = g^k mod p
+    uint32_t S = mod_exp(G, k, P);
+
+    // Calculate shared secret = Y^k mod p
+    uint32_t shared_secret = mod_exp(Y, k, P);
+
+    // XOR ciphertext with low 8 bits of (shared_secret XOR feedback low 8 bits)
+    uint8_t M = C ^ ((shared_secret & 0xFF) ^ (*feedback & 0xFF));
+
+    // Update feedback with S
+    *feedback = S;
+
+    return M;
+}
+
+int main() {
+    int w, h, ch;
+
+    elgamal_init();
+
+    // Load grayscale image
+    uint8_t *img = stbi_load("../images/input1.bmp", &w, &h, &ch, 1);
+    if (!img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+    int size = w * h;
+
+    print_matrix_uint8(img, w, h, "Original Image Matrix");
+
+    // Encrypt
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    if (!encrypted) {
+        printf(" Memory allocation failed\n");
+        stbi_image_free(img);
+        return 1;
+    }
+    uint32_t feedback_enc = 0;  // IV for encryption (0 for demo)
+    for (int i = 0; i < size; i++) {
+        encrypted[i] = elgamal_encrypt_byte(img[i], &feedback_enc);
+    }
+
+    stbi_write_bmp("../images/encrypted_cfb_elgamal.bmp", w, h, 1, encrypted);
+    print_matrix_uint8(encrypted, w, h, "Encrypted Image Matrix");
+
+    // Decrypt
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    if (!decrypted) {
+        printf(" Memory allocation failed\n");
+        free(encrypted);
+        stbi_image_free(img);
+        return 1;
+    }
+    uint32_t feedback_dec = 0;  // IV for decryption (must match encryption)
+    for (int i = 0; i < size; i++) {
+        decrypted[i] = elgamal_decrypt_byte(encrypted[i], &feedback_dec);
+    }
+
+    stbi_write_bmp("../images/decrypted_cfb_elgamal.bmp", w, h, 1, decrypted);
+    print_matrix_uint8(decrypted, w, h, "Decrypted Image Matrix");
+
+    // Cleanup
+    stbi_image_free(img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n ElGamal CFB encryption and decryption complete.\n");
+    return 0;
+}
+
+
+
+--------------------------15 OFB with ELGAMAL SIGNATURE -------------------------------
+
+
+
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include "../include/stb_image.h"
+#include "../include/stb_image_write.h"
+
+// Modular exponentiation
+uint32_t mod_exp(uint32_t base, uint32_t exp, uint32_t mod) {
+    uint64_t result = 1;
+    uint64_t base_mod = base % mod;
+    while (exp > 0) {
+        if (exp & 1) {
+            result = (result * base_mod) % mod;
+        }
+        base_mod = (base_mod * base_mod) % mod;
+        exp >>= 1;
+    }
+    return (uint32_t)result;
+}
+
+// Extended Euclidean Algorithm to find modular inverse
+int32_t mod_inv(int32_t a, int32_t m) {
+    int32_t m0 = m, t, q;
+    int32_t x0 = 0, x1 = 1;
+
+    if (m == 1) return 0;
+
+    while (a > 1) {
+        q = a / m;
+        t = m;
+        m = a % m;
+        a = t;
+
+        t = x0;
+        x0 = x1 - q * x0;
+        x1 = t;
+    }
+    if (x1 < 0) x1 += m0;
+    return x1;
+}
+
+// ElGamal Parameters
+const uint32_t P = 30803;  // prime
+const uint32_t G = 2;      // generator
+const uint32_t X = 7897;   // private key < P
+uint32_t Y;                // public key = G^X mod P
+
+// Initialize public key Y
+void elgamal_init() {
+    Y = mod_exp(G, X, P);
+}
+
+// Simple checksum hash of image data
+uint32_t simple_hash(uint8_t *data, int len) {
+    uint32_t hash = 0;
+    for (int i = 0; i < len; i++) {
+        hash = (hash + data[i]) % P;
+    }
+    return hash;
+}
+
+// ElGamal digital signature generation (simplified)
+// input: message hash, output: signature (r,s)
+void elgamal_sign(uint32_t hash, uint32_t *r, uint32_t *s) {
+    uint32_t k = 12345; // should be random and gcd(k,P-1)=1, simplified here
+    uint32_t k_inv = mod_inv(k, P - 1);
+
+    *r = mod_exp(G, k, P);
+    *s = (k_inv * (hash + X * (*r))) % (P - 1);
+}
+
+// ElGamal signature verification
+int elgamal_verify(uint32_t hash, uint32_t r, uint32_t s) {
+    if (r <= 0 || r >= P) return 0;
+    uint32_t v1 = (mod_exp(Y, r, P) * mod_exp(r, s, P)) % P;
+    uint32_t v2 = mod_exp(G, hash, P);
+    return v1 == v2;
+}
+
+// Print uint8_t matrix
+void print_matrix_uint8(uint8_t *data, int width, int height, const char *label) {
+    printf("\n%s (First 10x10 pixels):\n", label);
+    for (int i = 0; i < 10 && i < height; i++) {
+        for (int j = 0; j < 10 && j < width; j++) {
+            printf("%4d ", data[i * width + j]);
+        }
+        printf("\n");
+    }
+}
+
+// OFB Mode encryption/decryption for image data
+// keystream generated by repeated ElGamal exponentiation starting from IV
+void elgamal_ofb_encrypt_decrypt(uint8_t *input, uint8_t *output, int size, uint32_t iv) {
+    uint32_t feedback = iv;
+    for (int i = 0; i < size; i++) {
+        // Generate next keystream byte: feedback = g^feedback mod p
+        feedback = mod_exp(G, feedback, P);
+        uint8_t keystream_byte = (uint8_t)(feedback & 0xFF);
+        output[i] = input[i] ^ keystream_byte;
+    }
+}
+
+int main() {
+    int w, h, ch;
+
+    elgamal_init();
+
+    // Load grayscale image
+    uint8_t *img = stbi_load("../images/input1.bmp", &w, &h, &ch, 1);
+    if (!img) {
+        printf(" Failed to load input1.bmp\n");
+        return 1;
+    }
+    int size = w * h;
+
+    print_matrix_uint8(img, w, h, "Original Image Matrix");
+
+    // Compute simple hash of original image for signature
+    uint32_t hash = simple_hash(img, size);
+
+    // Generate digital signature
+    uint32_t r, s;
+    elgamal_sign(hash, &r, &s);
+    printf("\nDigital Signature (r, s): (%u, %u)\n", r, s);
+
+    // Encrypt image with OFB mode (using IV = 1 for demo)
+    uint8_t *encrypted = (uint8_t *)malloc(size);
+    if (!encrypted) {
+        printf(" Memory allocation failed\n");
+        stbi_image_free(img);
+        return 1;
+    }
+    elgamal_ofb_encrypt_decrypt(img, encrypted, size, 1);
+
+    stbi_write_bmp("../images/encrypted_ofb_elgamal.bmp", w, h, 1, encrypted);
+    print_matrix_uint8(encrypted, w, h, "Encrypted Image Matrix");
+
+    // Decrypt image with OFB mode (IV must match)
+    uint8_t *decrypted = (uint8_t *)malloc(size);
+    if (!decrypted) {
+        printf(" Memory allocation failed\n");
+        free(encrypted);
+        stbi_image_free(img);
+        return 1;
+    }
+    elgamal_ofb_encrypt_decrypt(encrypted, decrypted, size, 1);
+    stbi_write_bmp("../images/decrypted_ofb_elgamal.bmp", w, h, 1, decrypted);
+    print_matrix_uint8(decrypted, w, h, "Decrypted Image Matrix");
+
+    // Verify signature on decrypted image hash
+    uint32_t decrypted_hash = simple_hash(decrypted, size);
+    int valid = elgamal_verify(decrypted_hash, r, s);
+    printf("\nSignature verification on decrypted image: %s\n", valid ? "VALID" : "INVALID");
+
+    // Cleanup
+    stbi_image_free(img);
+    free(encrypted);
+    free(decrypted);
+
+    printf("\n ElGamal OFB mode with Digital Signature demo complete.\n");
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
